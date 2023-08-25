@@ -1,7 +1,7 @@
 package com.afs.restapi;
 
 import com.afs.restapi.entity.Employee;
-import com.afs.restapi.repository.EmployeeJpaRepository;
+import com.afs.restapi.repository.EmployeeRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,18 +26,18 @@ class EmployeeApiTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private EmployeeJpaRepository employeeJpaRepository;
+    private EmployeeRepository employeeRepository;
 
 
     @BeforeEach
     void setUp() {
-        employeeJpaRepository.deleteAll();
+        employeeRepository.deleteAll();
     }
 
     @Test
     void should_update_employee_age_and_salary() throws Exception {
         Employee previousEmployee = new Employee(1L, "zhangsan", 22, "Male", 1000);
-        Employee saveEmployee = employeeJpaRepository.save(previousEmployee);
+        Employee saveEmployee = employeeRepository.save(previousEmployee);
 
         Employee employeeUpdateRequest = new Employee(1L, "lisi", 24, "Female", 2000);
         ObjectMapper objectMapper = new ObjectMapper();
@@ -47,7 +47,7 @@ class EmployeeApiTest {
                         .content(updatedEmployeeJson))
                 .andExpect(MockMvcResultMatchers.status().is(204));
 
-        Optional<Employee> optionalEmployee = employeeJpaRepository.findById(saveEmployee.getId());
+        Optional<Employee> optionalEmployee = employeeRepository.findById(saveEmployee.getId());
         assertTrue(optionalEmployee.isPresent());
         Employee updatedEmployee = optionalEmployee.get();
         Assertions.assertEquals(employeeUpdateRequest.getAge(), updatedEmployee.getAge());
@@ -60,7 +60,7 @@ class EmployeeApiTest {
     @Test
     void should_create_employee() throws Exception {
         Employee employee = getEmployeeBob();
-        Employee savedEmployee = employeeJpaRepository.save(employee);
+        Employee savedEmployee = employeeRepository.save(employee);
 
         ObjectMapper objectMapper = new ObjectMapper();
         String employeeRequest = objectMapper.writeValueAsString(employee);
@@ -78,7 +78,7 @@ class EmployeeApiTest {
     @Test
     void should_find_employees() throws Exception {
         Employee employee = getEmployeeBob();
-        Employee savedEmployee = employeeJpaRepository.save(employee);
+        Employee savedEmployee = employeeRepository.save(employee);
 
         mockMvc.perform(get("/employees"))
                 .andExpect(MockMvcResultMatchers.status().is(200))
@@ -93,7 +93,7 @@ class EmployeeApiTest {
     @Test
     void should_find_employee_by_id() throws Exception {
         Employee employee = getEmployeeBob();
-        Employee savedEmployee = employeeJpaRepository.save(employee);
+        Employee savedEmployee = employeeRepository.save(employee);
 
         mockMvc.perform(get("/employees/{id}", savedEmployee.getId()))
                 .andExpect(MockMvcResultMatchers.status().is(200))
@@ -107,18 +107,18 @@ class EmployeeApiTest {
     @Test
     void should_delete_employee_by_id() throws Exception {
         Employee employee = getEmployeeBob();
-        Employee savedEmployee = employeeJpaRepository.save(employee);
+        Employee savedEmployee = employeeRepository.save(employee);
 
         mockMvc.perform(delete("/employees/{id}", savedEmployee.getId()))
                 .andExpect(MockMvcResultMatchers.status().is(204));
 
-        assertTrue(employeeJpaRepository.findById(savedEmployee.getId()).isEmpty());
+        assertTrue(employeeRepository.findById(savedEmployee.getId()).isEmpty());
     }
 
     @Test
     void should_find_employee_by_gender() throws Exception {
         Employee employee = getEmployeeBob();
-        Employee savedEmployee = employeeJpaRepository.save(employee);
+        Employee savedEmployee = employeeRepository.save(employee);
 
         mockMvc.perform(get("/employees?gender={0}", "Male"))
                 .andExpect(MockMvcResultMatchers.status().is(200))
@@ -135,12 +135,12 @@ class EmployeeApiTest {
         Employee employeeZhangsan = getEmployeeBob();
         Employee employeeSusan = getEmployeeSusan();
         Employee employeeLisi = getEmployeeLily();
-        Employee zhangsan = employeeJpaRepository.save(employeeZhangsan);
-        Employee susan = employeeJpaRepository.save(employeeSusan);
-        Employee lisi = employeeJpaRepository.save(employeeLisi);
+        Employee zhangsan = employeeRepository.save(employeeZhangsan);
+        Employee susan = employeeRepository.save(employeeSusan);
+        Employee lisi = employeeRepository.save(employeeLisi);
 
         mockMvc.perform(get("/employees")
-                        .param("pageNumber", "0")
+                        .param("pageNumber", "1")
                         .param("pageSize", "2"))
                 .andExpect(MockMvcResultMatchers.status().is(200))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.length()").value(2))
