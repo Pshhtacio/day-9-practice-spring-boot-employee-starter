@@ -3,8 +3,8 @@ package com.afs.restapi.service;
 import com.afs.restapi.entity.Company;
 import com.afs.restapi.entity.Employee;
 import com.afs.restapi.exception.CompanyNotFoundException;
-import com.afs.restapi.repository.CompanyJpaRepository;
-import com.afs.restapi.repository.EmployeeJpaRepository;
+import com.afs.restapi.repository.CompanyRepository;
+import com.afs.restapi.repository.EmployeeRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -13,42 +13,43 @@ import java.util.List;
 @Service
 public class CompanyService {
 
-    private final CompanyJpaRepository companyJpaRepository;
+    private final CompanyRepository companyRepository;
 
-    private final EmployeeJpaRepository employeeJpaRepository;
+    private final EmployeeRepository employeeRepository;
 
-    public CompanyService(CompanyJpaRepository companyJpaRepository, EmployeeJpaRepository employeeJpaRepository) {
-        this.companyJpaRepository = companyJpaRepository;
-        this.employeeJpaRepository = employeeJpaRepository;
+    public CompanyService(CompanyRepository companyRepository, EmployeeRepository employeeRepository) {
+        this.companyRepository = companyRepository;
+        this.employeeRepository = employeeRepository;
     }
 
     public List<Company> findAll() {
-        return companyJpaRepository.findAll();
+        return companyRepository.findAll();
     }
 
     public List<Company> findByPage(Integer pageNumber, Integer pageSize) {
-        return companyJpaRepository.findAll(PageRequest.of(pageNumber, pageSize)).toList();
+        int pageToIndex = pageNumber -1;
+        return companyRepository.findAll(PageRequest.of(pageToIndex, pageSize)).toList();
     }
 
     public Company findById(Long id) {
-        return companyJpaRepository.findById(id).orElseThrow(CompanyNotFoundException::new);
+        return companyRepository.findById(id).orElseThrow(CompanyNotFoundException::new);
     }
 
     public void update(Long id, Company company) {
         Company toBeUpdatedCompany = findById(id);
         toBeUpdatedCompany.setName(company.getName());
-        companyJpaRepository.save(toBeUpdatedCompany);
+        companyRepository.save(toBeUpdatedCompany);
     }
 
     public Company create(Company company) {
-        return companyJpaRepository.save(company);
+        return companyRepository.save(company);
     }
 
     public List<Employee> findEmployeesByCompanyId(Long id) {
-        return employeeJpaRepository.findByCompanyId(id);
+        return employeeRepository.findByCompanyId(id);
     }
 
     public void delete(Long id) {
-        companyJpaRepository.deleteById(id);
+        companyRepository.deleteById(id);
     }
 }
